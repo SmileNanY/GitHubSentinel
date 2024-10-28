@@ -23,11 +23,19 @@ def export_progress_by_date_range(repo, days):
 
 def github_repo_remove(value):
     subscription_manager.remove_subscription(value)
-    return json.dumps(subscription_manager.list_subscriptions()) 
+    repo_list = subscription_manager.list_subscriptions()
+    return_str = '## 最新列表 \n'
+    for s in repo_list:
+        return_str += f'### {s}\n'
+    return return_str
 
 def github_repo_additional(value):
     subscription_manager.add_subscription(value)
-    return json.dumps(subscription_manager.list_subscriptions()) 
+    repo_list = subscription_manager.list_subscriptions()
+    return_str = '## 最新列表 \n'
+    for s in repo_list:
+        return_str += f'### {s}\n'
+    return return_str
 
 # 创建Gradio界面
 with gr.Blocks() as demo:
@@ -40,14 +48,19 @@ with gr.Blocks() as demo:
         create_btn.click(fn=export_progress_by_date_range, inputs=[dropdown, slider], outputs=[gr.Markdown(), gr.File(label="下载报告")])
         pass
     with gr.Tab("订阅管理"):
-        with gr.Column():
-             name = gr.Textbox(label="添加订阅 repo")
-             add_btn = gr.Button("添加订阅")
-             add_btn.click(fn=github_repo_additional, inputs=name, outputs=gr.Markdown(), api_name="github_repo_additional")
-        with gr.Column():
-            name = gr.Textbox(label="移除订阅 repo")
-            rem_btn = gr.Button("移除订阅")
-            rem_btn.click(fn=github_repo_remove, inputs=name, outputs=gr.Markdown(), api_name="github_repo_remove")
+        with gr.Row():
+             with gr.Column():
+                name = gr.Textbox(label="添加订阅 repo")
+                add_btn = gr.Button("添加订阅")
+                
+             with gr.Row():
+                 add_btn.click(fn=github_repo_additional, inputs=name, outputs=gr.Markdown(), api_name="github_repo_additional")
+        with gr.Row():
+            with gr.Column():
+                name = gr.Textbox(label="移除订阅 repo")
+                rem_btn = gr.Button("移除订阅") 
+            with gr.Row():
+                rem_btn.click(fn=github_repo_remove, inputs=name, outputs=gr.Markdown(), api_name="github_repo_remove")
 
 if __name__ == "__main__":
      demo.launch()
