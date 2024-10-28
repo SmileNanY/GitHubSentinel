@@ -5,7 +5,8 @@ from openai import OpenAI
 
 class LLM:
     def __init__(self):
-        self.client = OpenAI()
+        self.client = OpenAI(api_key='sk-1wWuiqNeRngvKSEu0b29B3F5B4F042409c20B9712304F535',
+                       base_url='https://api.bianxie.ai/v1')
 
     def generate_daily_report(self, markdown_content, dry_run=False):
         prompt = f"以下是项目的最新进展，根据功能合并同类项，形成一份简报，至少包含：1）新增功能；2）主要改进；3）修复问题；:\n\n{markdown_content}"

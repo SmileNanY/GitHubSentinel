@@ -11,7 +11,7 @@ class GitHubClient:
     def fetch_updates(self, repo):
         # 获取特定 repo 的更新（commits, issues, pull requests）
         updates = {
-            'commits': self.fetch_commits(repo),
+            # 'commits': self.fetch_commits(repo),
             'issues': self.fetch_issues(repo),
             'pull_requests': self.fetch_pull_requests(repo)
         }
