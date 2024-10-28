@@ -6,7 +6,9 @@ from logger import LOG  # 导入日志模块
 class LLM:
     def __init__(self):
         # 创建一个OpenAI客户端实例
-        self.client = OpenAI()
+        key = os.getenv('OPEN_API_KEY', '') # 从环境变量中获取API密钥
+        self.client = OpenAI(api_key=key,
+                       base_url='https://api.bianxie.ai/v1')
         # 从TXT文件加载提示信息
         with open("prompts/report_prompt.txt", "r", encoding='utf-8') as file:
             self.system_prompt = file.read()
