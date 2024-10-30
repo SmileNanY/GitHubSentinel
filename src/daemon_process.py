@@ -5,6 +5,7 @@ import sys  # 导入sys库，用于执行系统相关的操作
 
 from config import Config  # 导入配置管理类
 from github_client import GitHubClient  # 导入GitHub客户端类，处理GitHub API请求
+from hacker_news_client import HackerNewsClient
 from notifier import Notifier  # 导入通知器类，用于发送通知
 from report_generator import ReportGenerator  # 导入报告生成器类
 from llm import LLM  # 导入语言模型类，可能用于生成报告内容
@@ -26,9 +27,16 @@ def github_job(subscription_manager, github_client, report_generator, notifier, 
         markdown_file_path = github_client.export_progress_by_date_range(repo, days)
         # 从Markdown文件自动生成进展简报
         report, report_file_path = report_generator.generate_report_by_date_range(markdown_file_path, days)
-        notifier.notify(repo, report)
+        # notifier.notify(repo, report)
+        print(report)
     LOG.info(f"[定时任务执行完毕]")
 
+def hackernews_job(hackernews_client, report_generator, notifier):
+    LOG.info("[开始执行定时任务]")
+    markdown_file_path = hackernews_client.export_stories()
+    report, report_file_path = report_generator.generate_report_with_hacker_news(markdown_file_path)
+    print(report)
+    LOG.info(f"[定时任务执行完毕]")
 
 def main():
     # 设置信号处理器
@@ -36,6 +44,7 @@ def main():
 
     config = Config()  # 创建配置实例
     github_client = GitHubClient(config.github_token)  # 创建GitHub客户端实例
+    hacker_client = HackerNewsClient()  # 创建GitHub客户端实例
     notifier = Notifier(config.email)  # 创建通知器实例
     llm = LLM()  # 创建语言模型实例
     report_generator = ReportGenerator(llm)  # 创建报告生成器实例
@@ -43,11 +52,16 @@ def main():
 
     # 启动时立即执行（如不需要可注释）
     github_job(subscription_manager, github_client, report_generator, notifier, config.freq_days)
+    hackernews_job(hacker_client, report_generator, notifier)
 
     # 安排每天的定时任务
     schedule.every(config.freq_days).days.at(
         config.exec_time
     ).do(github_job, subscription_manager, github_client, report_generator, notifier, config.freq_days)
+
+    schedule.every(config.freq_days).days.at(
+        config.exec_time
+    ).do(hackernews_job, hacker_client, report_generator, notifier)
 
     try:
         # 在守护进程中持续运行

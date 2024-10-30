@@ -38,4 +38,19 @@ class ReportGenerator:
         LOG.info(f"GitHub 项目报告已保存到 {report_file_path}")
 
         return report, report_file_path
+    
+    def generate_report_with_hacker_news(self, markdown_file_path):
+        # 生成特定日期范围的报告，流程与日报生成类似
+        with open(markdown_file_path, 'r') as file:
+            markdown_content = file.read()
+
+        report = self.llm.generate_hacker_report(markdown_content)
+
+        report_file_path = os.path.splitext(markdown_file_path)[0] + f"_report.md"
+        with open(report_file_path, 'w+') as report_file:
+            report_file.write(report)
+        
+        LOG.info(f"Hacker news 热点报告已保存到 {report_file_path}")
+
+        return report, report_file_path
 
