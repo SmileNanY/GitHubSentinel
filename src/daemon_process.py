@@ -18,6 +18,10 @@ def graceful_shutdown(signum, frame):
     LOG.info("[优雅退出]守护进程接收到终止信号")
     sys.exit(0)  # 安全退出程序
 
+def do_job(subscription_manager,hackernews_client, github_client, report_generator, notifier, days):
+    # github_job(subscription_manager, github_client, report_generator, notifier, days)
+    hackernews_job(hackernews_client, report_generator, notifier)
+
 def github_job(subscription_manager, github_client, report_generator, notifier, days):
     LOG.info("[开始执行定时任务]")
     subscriptions = subscription_manager.list_subscriptions()  # 获取当前所有订阅
@@ -46,22 +50,17 @@ def main():
     github_client = GitHubClient(config.github_token)  # 创建GitHub客户端实例
     hacker_client = HackerNewsClient()  # 创建GitHub客户端实例
     notifier = Notifier(config.email)  # 创建通知器实例
-    llm = LLM()  # 创建语言模型实例
+    llm = LLM(config)  # 创建语言模型实例
     report_generator = ReportGenerator(llm)  # 创建报告生成器实例
     subscription_manager = SubscriptionManager(config.subscriptions_file)  # 创建订阅管理器实例
 
     # 启动时立即执行（如不需要可注释）
-    github_job(subscription_manager, github_client, report_generator, notifier, config.freq_days)
-    hackernews_job(hacker_client, report_generator, notifier)
+    do_job(subscription_manager, hacker_client, github_client, report_generator, notifier, config.freq_days)
 
     # 安排每天的定时任务
     schedule.every(config.freq_days).days.at(
         config.exec_time
-    ).do(github_job, subscription_manager, github_client, report_generator, notifier, config.freq_days)
-
-    schedule.every(config.freq_days).days.at(
-        config.exec_time
-    ).do(hackernews_job, hacker_client, report_generator, notifier)
+    ).do(do_job, subscription_manager, hacker_client, github_client, report_generator, notifier, config.freq_days)
 
     try:
         # 在守护进程中持续运行

@@ -29,8 +29,7 @@ class ReportGenerator:
         with open(markdown_file_path, 'r') as file:
             markdown_content = file.read()
 
-        report = self.llm.generate_daily_report(markdown_content)
-
+        report = self.llm.generate_daily_report(markdown_content, 'ollama_prompt')
         report_file_path = os.path.splitext(markdown_file_path)[0] + f"_report.md"
         with open(report_file_path, 'w+') as report_file:
             report_file.write(report)
@@ -44,7 +43,7 @@ class ReportGenerator:
         with open(markdown_file_path, 'r') as file:
             markdown_content = file.read()
 
-        report = self.llm.generate_hacker_report(markdown_content)
+        report = self.llm.generate_daily_report(markdown_content, 'hacker_news_prompt')
 
         report_file_path = os.path.splitext(markdown_file_path)[0] + f"_report.md"
         with open(report_file_path, 'w+') as report_file:
